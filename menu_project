@@ -1,0 +1,155 @@
+#!/bin/bash
+
+#CHECK IF HE IS A ROOT
+if [[ "$EUID" -ne 0 ]];
+then
+	whiptail --title "permission denied" --msgbox "u must run as a root or sudo" 10 50 
+	exit 1
+fi
+
+#FUCTIONS
+
+add_user(){
+	username=$(whiptail --inputbox "Enter username:" 10 50 3>&1 1>&2 2>&3)
+	if id "$username" &>/dev/null;
+	then
+		whiptail --msgbox "user $username already exists" 10 50
+	else
+		useradd -m "$username" 
+		whiptail --msgbox "user $username created" 10 50 
+	fi
+}
+
+modify_user(){
+	username=$(whiptail --inputbox "Enter username to modify: " 10 50 3>&1 1>&2 2>&3)
+	if id "$username" &>/dev/null;
+	then
+		newname=$(whiptail --inputbox "Enter new username:" 10 50 3>&1 1>&2 2>&3)
+		usermod -l "$newname" "$username"
+		whiptail --msgbox "Modified successfully" 10 50
+	else
+		whiptail --msgbox "username does not exist" 10 50 
+	fi
+}
+
+delete_user(){
+	username=$(whiptail --inputbox "Enter username to delete:" 10 50 3>&1 1>&2 2>&3) 
+	if id "$username" &>/dev/null;
+	then
+		userdel -r "$username"
+		whiptail --msgbox "User Deleted" 10 50 
+	else
+		whiptail --msgbox "User does not exist" 10 50
+	fi
+}
+
+list_users(){
+	users=$(awk -F ':' '{print $1}' /etc/passwd)
+	whiptail --title "Users list" --scrolltext --msgbox "$users" 20 50 
+}
+
+add_group(){
+	group=$(whiptail --inputbox "Enter group name:" 10 50 3>&1 1>&2 2>&3)
+	if getent group "$group" &>/dev/null; 
+	then
+		whiptail --msgbox "Group already exist" 10 50 
+	else
+		groupadd "$group"
+		whiptail --msgbox "Group Added Successfully" 10 50 
+	fi 
+}
+
+modify_group(){
+	group=$(whiptail --inputbox "Enter group name to modify:" 10 50 3>&1 1>&2 2>&3)
+	if getent group "$group" &>/dev/null;
+	then
+		newgroup=$(whiptail --inputbox "Enter new name of the group:" 10 50 3>&1 1>&2 2>&3)
+		groupmod -n "$newgroup" "$group" 
+		whiptail --msgbox "Group added successfully" 10 50 
+	else
+		whiptail --msgbox "Group does not exist" 10 50 
+	fi
+}
+
+delete_group(){
+	group=$(whiptail --inputbox "Enter group name:" 10 50 3>&1 1>&2 2>&3)
+	if getent group "$group" &>/dev/null; 
+	then
+		groupdel "$group"
+		whiptail --msgbox "Group Deleted" 10 50
+	else
+		whiptail --msgbox "Group does not exist" 10 50
+	fi 
+}
+
+list_groups(){
+	group=$(awk -F ':' '{print $1}' /etc/group)
+	whiptail --title "Groups list" --scrolltext --msgbox "$group" 20 50
+}
+
+disable_user(){
+	username=$(whiptail --inputbox "Enter username to disable:" 10 50 3>&1 1>&2 2>&3)
+	if id "$username" &>/dev/null;
+	then
+		usermod -L "$username"
+		whiptail --msgbox "$username locked" 10 50 
+	else
+		whiptail --msgbox "$username does not exist" 10 50 
+	fi
+}
+
+enable_user(){
+	username=$(whiptail --inputbox "Enter username to enable:" 10 50 3>&1 1>&2 2>&3)
+	if id "$username" &>/dev/null;
+	then
+		usermod -U "$username"
+		whiptail --msgbox "$username Unlocked" 10 50 
+	else
+		whiptail --msgbox "$username does not exist" 10 50
+	fi
+}
+
+change_password(){
+	username=$(whiptail --inputbox "Enter username to change password:" 10 50 3>&1 1>&2 2>&3)
+	if id "$username" &>/dev/null;
+	then
+		passwd "$username"
+		whiptail --msgbox "Password changed successfully" 10 50
+	else
+		whiptail --msgbox "$username does not exist" 10 50
+	fi
+}
+
+while true; do
+	choice=$(whiptail --title "Main Menu" --menu "Choose an option:" 20 60 13 \
+	        "Add User" "Add a user to the system." \
+                "Modify User" "Modify an existing user." \
+                "Delete User" "Delete an existing user." \
+                "List Users" "List all users on the system." \
+                "Add Group" "Add a user group to the system." \
+                "Modify Group" "Modify a group and its list of members." \
+                "Delete Group" "Delete an existing group." \
+                "List Groups" "List all groups on the system." \
+                "Disable User" "Lock the user account." \
+                "Enable User" "Unlock the user account." \
+                "Change Password" "Change Password of a user." \
+                "Exit" "Exit the program." \
+	       	3>&1 1>&2 2>&3)
+
+	case $choice in
+	        "Add User") add_user ;;
+                "Modify User") modify_user ;;
+                "Delete User") delete_user ;;
+                "List Users") list_users ;;
+                "Add Group") add_group ;;
+                "Modify Group") modify_group ;;
+                "Delete Group") delete_group ;;
+                "List Groups") list_groups ;;
+                "Disable User") disable_user ;;
+                "Enable User") enable_user ;;
+                "Change Password") change_password ;;
+		"Exit") break ;;
+                *) break ;;
+	esac
+done
+
