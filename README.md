@@ -21,7 +21,8 @@ A lightweight and interactive **user & group management system** built entirely 
 
 ## 📸 Demo (Optional)
 
-![Screenshot (243)](https://github.com/user-attachments/assets/dd0be6c9-5f89-4ae0-9f92-bf661fef0346)
+![Screenshot (243)](https://github.com/user-attachments/assets/664b47fc-67b6-441e-89c2-651d5e5a59a9)
+
 
 ---
 
